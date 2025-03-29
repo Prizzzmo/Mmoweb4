@@ -8,14 +8,28 @@
 
 defined('ROOT_DIR') OR exit('No direct script access allowed');
 
+//Add Database Configuration (Adjust these values to your local setup)
+define('DB_HOST', 'localhost');
+define('DB_USER', 'your_db_user');
+define('DB_PASSWORD', 'your_db_password');
+define('DB_NAME', 'your_db_name');
+
+
 class Api extends Controller {
 
     public function __construct() {
         parent::__construct();
 
-        // Проверка API ключа
+        // Проверка API ключа -  This section needs to be adapted to work with a local key mechanism if needed.
         if(!isset($_POST['secret_key']) || $_POST['secret_key'] !== API_KEY) {
             die(json_encode(['status' => 'error', 'message' => 'Invalid API key']));
+        }
+        //Establish database connection
+        try {
+            $this->db = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASSWORD);
+            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
+            die(json_encode(['status' => 'error', 'message' => 'Database connection error: ' . $e->getMessage()]));
         }
     }
 
@@ -26,8 +40,7 @@ class Api extends Controller {
 
     public function update_session(){
         if (isset($_POST['session_id'])){
-            $db = get_instance()->db();
-            $STH = $db->prepare('SELECT `data`, `ip` FROM mw_session WHERE session_id = :session_id AND session_end > NOW();');
+            $STH = $this->db->prepare('SELECT `data`, `ip` FROM mw_session WHERE session_id = :session_id AND session_end > NOW();');
             $STH->bindValue(':session_id', $_POST['session_id']);
             $STH->execute();
 
@@ -37,7 +50,7 @@ class Api extends Controller {
 
                 if (is_array($session) AND count($session)>0) {
                     // Process session update locally
-                    $STH = $db->prepare('UPDATE `mw_session` SET `data`= :data WHERE session_id = :session_id;');
+                    $STH = $this->db->prepare('UPDATE `mw_session` SET `data`= :data WHERE session_id = :session_id;');
                     $STH->execute(array(
                         ':data' => json_encode($session),
                         ':session_id' => $_POST['session_id'],

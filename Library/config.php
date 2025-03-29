@@ -250,7 +250,7 @@ $system = array (
 	),
 	'site'=>array(
 		'url_website' => 'https://mw4.mmoweb.ru/',
-		'url_forum' => 'https://forum.mmoweb.ru/',
+		'url_forum' => 'http://0.0.0.0:5000/forum/',
 		'status' => true,
 		'status_site_jobs' => false,
 		'status_site_jobs_msg' => 'Sorry, we&#039;re currently unavailable. Please check back later.',
