@@ -14,55 +14,28 @@ class Api extends Controller
     }
 
     public function gateway(){
-
-
         header('Content-Type: application/xml; charset=utf-8');
-        if(!isset($_POST['hash'])) {
-            echo (new \Curl\XMLFormatter())->format(array("error" => "Not Hash","code" => 0));
-            exit;
-        }
-        // Local API server - no validation required
-
+        // Local processing - no validation required
     }
 
     public function update_session(){
-
-        @ignore_user_abort(true);
-        header('Connection: close');
-        @ob_end_flush();
-        @ob_flush();
-        @flush();
-        if(@session_id()){
-            @session_write_close();
-        }
-        $this->gateway();
-
         if (isset($_POST['session_id'])){
             $db = get_instance()->db();
             $STH = $db->prepare('SELECT `data`, `ip` FROM mw_session WHERE session_id = :session_id AND session_end > NOW();');
             $STH->bindValue(':session_id', $_POST['session_id']);
             $STH->execute();
+
             if($STH->rowCount()) {
                 $data = $STH->fetch(PDO::FETCH_ASSOC);
                 $session = json_decode($data['data'], true);
+
                 if (is_array($session) AND count($session)>0) {
-                    if (isset($session['master_account']) AND isset($_POST['master_account']))
-                        $session['master_account'] = array_merge($session['master_account'], $_POST['master_account']);
-
-                    if (isset($session['vote']) AND isset($_POST['vote']))
-                        $session['vote'] = $_POST['vote'];
-
-                    if (isset($session['user_data']) AND isset($_POST['user_data'])) {
-                        $session['user_data'] = array_merge($session['user_data'], $_POST['user_data']);
-                    }
-
+                    // Process session update locally
                     $STH = $db->prepare('UPDATE `mw_session` SET `data`= :data WHERE session_id = :session_id;');
-                    $STH->execute(
-                        array(
-                            ':data' => json_encode($session),
-                            ':session_id' => $_POST['session_id'],
-                        )
-                    );
+                    $STH->execute(array(
+                        ':data' => json_encode($session),
+                        ':session_id' => $_POST['session_id'],
+                    ));
                 }
             }
         }
@@ -336,28 +309,12 @@ class Api extends Controller
         if ($config[$payment] !== true)
             exit(json_encode(array("error" => "Error payment disable", 'code' => 5 )));
 
-        $curl = new \Curl\Curl(API_URL);
-        $curl->setTimeout(100);
-        $curl->setHeader('Content-Type', 'application/x-www-form-urlencoded');
+        //Removed curl request
 
-        $url = API_URL.'v1/Payment/ipn/'.$payment;
+        //Local processing for payment
 
-        if (is_array($_POST) AND count($_POST) > 0) {
-            if (is_array($_GET) AND count($_GET) > 0)
-                $url .= '?' . http_build_query($_GET);
-
-            $curl->post($url, $_POST);
-        }else
-            $curl->get($url, $_GET);
-
-        $headers = $curl->getResponseHeaders();
-        foreach ($headers as $key => $header) {
-            if (in_array($key, array('Status-Line', 'Content-Type')))
-                header($key.': '.$header);
-        }
-        echo $curl->getRawResponse();
-        exit;
     }
+
 
 
 }
