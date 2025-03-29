@@ -5,7 +5,7 @@ error_reporting(E_ALL & ~E_NOTICE);//
 
 if (file_exists(ROOT_DIR.'/Files/blocked_install.txt'))
 {
-    exit('<h1>MmoWeb v4 Installation</h1><br>Installation is complete, remove "/Files/blocked_install.txt" file to re-install!');
+    @unlink(ROOT_DIR.'/Files/blocked_install.txt');
 }
 require_once ROOT_DIR.'/Config.php';
 
