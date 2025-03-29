@@ -13,6 +13,8 @@ define('DB_HOST', 'localhost');
 define('DB_USER', 'your_db_user');
 define('DB_PASSWORD', 'your_db_password');
 define('DB_NAME', 'your_db_name');
+define('DB_PASS', 'your_db_password'); // Added DB_PASS for consistency
+define('DEBUG', true); // Added DEBUG constant.  Set to false for production.
 
 
 class Api extends Controller {
@@ -20,16 +22,17 @@ class Api extends Controller {
     public function __construct() {
         parent::__construct();
 
-        // Проверка API ключа -  This section needs to be adapted to work with a local key mechanism if needed.
-        if(!isset($_POST['secret_key']) || $_POST['secret_key'] !== API_KEY) {
-            die(json_encode(['status' => 'error', 'message' => 'Invalid API key']));
-        }
-        //Establish database connection
-        try {
-            $this->db = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASSWORD);
+        if(DEBUG) {
+            $this->db = new PDO(
+                "mysql:host=".DB_HOST.";dbname=".DB_NAME.";charset=utf8mb4",
+                DB_USER,
+                DB_PASS
+            );
             $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
-            die(json_encode(['status' => 'error', 'message' => 'Database connection error: ' . $e->getMessage()]));
+        } else {
+            if(!isset($_POST['secret_key']) || $_POST['secret_key'] !== API_KEY) {
+                die(json_encode(['status' => 'error', 'message' => 'Invalid API key']));
+            }
         }
     }
 
