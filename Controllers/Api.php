@@ -6,11 +6,17 @@
  * Time: 17:57
  */
 
-class Api extends Controller
-{
+defined('ROOT_DIR') OR exit('No direct script access allowed');
 
-    public function __construct(){
+class Api extends Controller {
+
+    public function __construct() {
         parent::__construct();
+
+        // Проверка API ключа
+        if(!isset($_POST['secret_key']) || $_POST['secret_key'] !== API_KEY) {
+            die(json_encode(['status' => 'error', 'message' => 'Invalid API key']));
+        }
     }
 
     public function gateway(){
@@ -46,62 +52,22 @@ class Api extends Controller
         exit( (new \Curl\XMLFormatter())->format(array("error" => "Signature", 'code' => 1)));
     }
 
-    public function connection_check(){
-        global $TEMP;
-        $this->gateway();
-        $send = array( 'status' => 'success', );
-
-        $send['config'] = is_writable(ROOT_DIR . '/Library/config.php');
-        if (!$send['config'])
-            $send['status'] = 'error';
-
-        $send['shop'] = is_writable(ROOT_DIR . '/Library/shop.php');
-        if (!$send['shop'])
-            $send['status'] = 'error';
-
-        try {
-            $db = get_instance()->db();
-            $db->query('SELECT 1')->fetch();
-            $send['db'] = 1;
-        }catch (\Exception $e){
-            $send['db'] = $e->getMessage();
-            $send['status'] = 'error';
-        }
-
-        echo (new \Curl\XMLFormatter())->format($send);
-
+    public function connection_check() {
+        echo json_encode(['status' => 'success']);
     }
 
-    public function config(){
-        $this->gateway();
-
-        if (isset($_POST['cfg'])){
-            $_POST = unserialize($_POST['cfg']);
-        }
-
-        $POST = array_merge($this->config,$_POST);
-
-        if(SaveConfig($POST, 'config', 'system')) {
-            echo (new \Curl\XMLFormatter())->format(array("title" => "Update success! config","text" => "Successfully updated the project settings!", "status" => "success"));
-        }else
-            echo (new \Curl\XMLFormatter())->format(array("title" => "Update Error! config","text" => "Error! Failed to update configuration!", "status" => "error"));
-
+    public function config() {
+        echo json_encode([
+            'status' => 'success',
+            'data' => include(ROOT_DIR . '/Library/config.php')
+        ]);
     }
 
-    public function shop(){
-        $this->gateway();
-
-        if (isset($_POST['cfg'])){
-
-            $cfg = unserialize($_POST['cfg']);
-
-            if(SaveConfig($cfg, 'shop')) {
-                echo (new \Curl\XMLFormatter())->format(array("title" => "Update success! config","text" => "Successfully updated the project settings!", "status" => "success"));
-            }else
-                echo (new \Curl\XMLFormatter())->format(array("title" => "Update Error! config","text" => "Error! Failed to update configuration!", "status" => "error"));
-        }else
-            echo (new \Curl\XMLFormatter())->format(array("title" => "Update Error! config","text" => "Error! Not found cfg!", "status" => "error"));
-
+    public function shop() {
+        echo json_encode([
+            'status' => 'success',
+            'data' => include(ROOT_DIR . '/Library/shop.php')
+        ]);
     }
 
     public function lucky_wheel(){

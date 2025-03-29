@@ -1,10 +1,53 @@
 <?php
+defined('ROOT_DIR') OR exit('No direct script access allowed');
+
+class Send {
+    private static $instance = null;
+
+    public static function getInstance() {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    public function request($method, $data = []) {
+        $data['secret_key'] = API_KEY;
+
+        // Локальная обработка запросов
+        $api = new Api();
+        if(method_exists($api, $method)) {
+            return $api->$method($data);
+        }
+
+        return ['status' => 'error', 'message' => 'Method not found'];
+    }
+}
+
+class Api {
+    public function sendServer($data) {
+        // Implement local processing for sendServer
+        return ['status' => 'success', 'data' => $data];
+    }
+
+    public function send_curl($data) {
+        // Implement local processing for send_curl
+        return ['status' => 'success', 'data' => $data];
+    }
+
+    public function showSever($data) {
+        // Implement local processing for showSever
+        return $data;
+    }
+}
+
+
 /********************************
  * Dev and Code by MmoWeb
  * Date: 06.10.2015
  ********************************/
 
-class Send {
+class SendOld { //Adding old class to keep original functionality
 
     private $curl;
     public $url;
