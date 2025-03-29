@@ -13,7 +13,7 @@ define('DB_HOST', 'localhost');
 define('DB_USER', 'your_db_user');
 define('DB_PASSWORD', 'your_db_password');
 define('DB_NAME', 'your_db_name');
-define('DB_PASS', 'your_db_password'); // Added DB_PASS for consistency
+define('DB_PASSWORD', 'your_db_password'); // Using DB_PASSWORD for consistency
 define('DEBUG', true); // Added DEBUG constant.  Set to false for production.
 
 
