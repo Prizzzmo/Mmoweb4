@@ -5,6 +5,7 @@ $route['default_controller'] = 'Pages';
 
 $route['(\w{2})/(.*)'] = '$2';
 $route['(\w{2})'] = $route['default_controller'];
+$route['(.*)'] = 'Pages/page_static/$1';
 
 //обработчик приложения
 $route['app'] = "app/index";
